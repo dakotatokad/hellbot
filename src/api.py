@@ -1,4 +1,12 @@
 import requests
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+super_client = os.getenv("SUPER_CLIENT")
+super_contact = os.getenv("SUPER_CONTACT")
 
 class HellDivers:
     def __init__(self):
@@ -6,8 +14,8 @@ class HellDivers:
         self.endpoint = "https://api.helldivers2.dev"
         self.headers = {
             "accept": "application/json",
-            "X-Super-Client": "hellbot",
-            "X-Super-Contact": "https://github.com/dakotatokad/hellbot",
+            "X-Super-Client": super_client,
+            "X-Super-Contact": super_contact,
         }
         # Leveraging https://github.com/helldivers-2/api?tab=readme-ov-file
         # Swagger: https://helldivers-2.github.io/api/openapi/swagger-ui.html
