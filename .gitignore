@@ -1,3 +1,8 @@
+# Notebooks
+*.ipynb
+# JSON Test files, for now
+*.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
