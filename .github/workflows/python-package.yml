@@ -28,9 +28,11 @@ jobs:
         
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        python -m pip install flake8 pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f requirements.txt ]; then
+          pip install -r requirements.txt
+        else
+          echo "requirements.txt not found"
+        fi
         
     - name: Ruff Lint and Format check in PR Python files
       uses: adityabhangle658/ruff-python-lint-format-check-pr@v1.0.3
