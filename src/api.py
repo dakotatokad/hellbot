@@ -9,6 +9,8 @@ class HellDivers:
             "X-Super-Client": "hellbot",
             "X-Super-Contact": "hellbot",
         }
+        # Leveraging https://github.com/helldivers-2/api?tab=readme-ov-file
+        # Swagger: https://helldivers-2.github.io/api/openapi/swagger-ui.html
         
     def get_major_order(self) -> tuple[str, str, str, int]:
         """
