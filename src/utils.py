@@ -31,7 +31,7 @@ def parse_quotes() -> list[str]:
     Returns:
         list[str]: A list of quotes with leading and trailing whitespace removed.
     """
-    quotes_path = os.path.join(".", "data", "inspirational_quotes.txt")
+    quotes_path = os.path.join(os.path.dirname(__file__), "data", "inspirational_quotes.txt")
     with open(quotes_path, "r") as file:
         quotes = file.readlines()
         

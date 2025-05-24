@@ -19,7 +19,7 @@ bot = commands.Bot(command_prefix="$", intents=intents)
 quotes = utils.parse_quotes()
     
 @bot.command(name="inspire", help="Inspires our brave Helldivers with a quote.")
-async def enlist(ctx, quotes: list[str] = quotes):
+async def enlist(ctx):
     response = random.choice(quotes)
     await ctx.send(response)
     
