@@ -1,7 +1,7 @@
 name: Feature Request
 description: Request a new feature or enhancement
 title: "[Feat]: "
-labels: ["triage", "enhancement", "status: todo"]
+labels: ["triage", "enhancement", "status: Todo"]
 projects: ["dakotatokad/1"]
 body:
   - type: markdown
@@ -38,3 +38,4 @@ body:
       label: I have checked the documentation, FAQ, and existing issues to see if this feature has already been requested.
     validations:
       required: true
+      
