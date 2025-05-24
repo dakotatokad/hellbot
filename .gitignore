@@ -3,6 +3,11 @@
 # JSON Test files, for now
 *.json
 
+# Test Directories
+/tests/reports/assets/
+/tests/reports/coverage/
+/tests/reports/tests.html
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
