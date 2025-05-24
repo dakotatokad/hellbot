@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timezone
 
 def days_from_now(date: str) -> str:
@@ -22,4 +23,18 @@ def days_from_now(date: str) -> str:
     
     return f"{days}, {hours} hours, and {minutes} minutes"
     
-    
+
+def parse_quotes() -> list[str]:
+    """
+    Parses the quotes file and returns a list of quotes.
+
+    Returns:
+        list[str]: A list of quotes with leading and trailing whitespace removed.
+    """
+    quotes_path = os.path.join(".", "data", "inspirational_quotes.txt")
+    with open(quotes_path, "r") as file:
+        quotes = file.readlines()
+        
+    quotes = [quote.strip() for quote in quotes]
+        
+    return quotes
