@@ -26,7 +26,7 @@ async def enlist(ctx):
 @bot.command(name="orders", help="Get the current Major Orders.")
 async def major_orders(ctx):
     briefing, rewards, expires, code= brasch.get_major_order()
-    if code == 200:
+    if code == 200 or code == 0:
         expires_in = utils.days_from_now(expires)
         
         await ctx.send(
