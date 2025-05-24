@@ -1,0 +1,40 @@
+name: Feature Request
+description: Request a new feature or enhancement
+title: "[Feat]: "
+labels: ["triage", "enhancement", "status: todo"]
+projects: ["dakotatokad/1"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature request!
+  - type: textarea
+    id: feature-request
+    attributes:
+      label: New Feature Idea?
+      description: How would you like it to behavior? What problem does it solve?
+      placeholder: I'd like to see a new feature that does X, Y, and Z.
+    validations:
+      required: true
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: What is this bot deployed on?
+      multiple: true
+      options:
+        - Docker
+        - Local Script
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
+  - type: checkbox
+    id: agree
+    attributes:
+      label: I have checked the documentation, FAQ, and existing issues to see if this feature has already been requested.
+    validations:
+      required: true
