@@ -32,3 +32,10 @@ body:
       label: Relevant log output
       description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
       render: shell
+  - type: checkboxes
+    attributes:
+      label: Able to Help
+      description: I know how to solve this issue
+      options:
+        - label: I'm willing to help solve this issue.
+          required: false

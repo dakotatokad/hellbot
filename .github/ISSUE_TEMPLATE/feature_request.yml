@@ -33,8 +33,9 @@ body:
       description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
       render: shell
   - type: checkboxes
-    id: agree
     attributes:
-      label: I have checked the documentation, FAQ, and existing issues to see if this feature has already been requested.
-    validations:
-      required: true
+      label: Unique Feature
+      description: I've checked the documentation and issues list
+      options:
+        - label: A feature for this does not already exist.
+          required: true
