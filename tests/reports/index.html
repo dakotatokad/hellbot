@@ -1,0 +1,24 @@
+<!--
+View this page from VS Code with Live Server
+(https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer)
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>HellBot Test Reports</title>
+</head>
+<body>
+    <h1>Testing Index</h1>
+    <h2>Test Command</h2>
+    <p>Run this command first to build files linked below:</p>
+    <p><code>pytest --html=./tests/reports/tests.html --cov=. --cov-report=html:./tests/reports/coverage</code></p>
+    <p>Additionally, configure the task as your default VSCode test task with <a href="../../docs/reference_build_task.txt">tasks.json</a></p>
+    <hr>
+    <!--These links wont work until the code above is ran and builds the files-->
+    <h2>Test Report</h2>
+    <p><a href="./tests.html">Pytest Report</a></p>
+    <h2>Coverage Report</h2>
+    <p><a href="./coverage/index.html">Coverage Report</a></p>
+</body>
+</html>
