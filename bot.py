@@ -1,4 +1,3 @@
-from ctypes import util
 import os
 import random
 import time
@@ -47,8 +46,8 @@ assignments_cache = classes.APICache(
     timestamp = time.time(),
 )
 
-inspirational_quotes = utils.parse_quotes("inspirational_quotes.txt")
-error_quotes = utils.parse_quotes("error_phrases.txt")
+inspirational_quotes = utils.parse_quotes(os.path.join(".", "data"), "inspirational_quotes.txt")
+error_quotes = utils.parse_quotes(os.path.join(".", "data"), "error_phrases.txt")
 
 bot = commands.Bot(command_prefix="$", intents=intents)
     
@@ -65,7 +64,7 @@ async def major_orders(ctx):
     try:
         raw_data, response_code = assignments_cache.get_cache()
         logging.debug(f"Assignments Cache Attempt: {response_code == 304}, Response Code: {response_code}")
-    except (ValueError, TimeoutError) as e:
+    except (ValueError, TimeoutError):
         # TODO: Log the error; cache not populated yet
         raw_data, response_code = await api_utils.query_api(
             api = api,
