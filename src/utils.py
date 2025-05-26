@@ -40,16 +40,22 @@ def ttl_from_now(future_time:str) -> int:
     )
     
 
-def parse_quotes(file_name: str) -> list[str]:
+def parse_quotes(path: str, file_name: str) -> list[str]:
     """
     Parses the quotes file and returns a list of quotes.
 
     Returns:
         list[str]: A list of quotes with leading and trailing whitespace removed.
     """
-    quotes_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", file_name)
-    with open(quotes_path, "r") as file:
-        quotes = file.readlines()
+    # os.path.join(os.path.dirname(os.path.dirname(__file__)), "data"
+    quotes_path = os.path.join(path, file_name)
+    try:
+        with open(quotes_path, "r") as file:
+            quotes = file.readlines()
+    except FileNotFoundError:
+        raise FileNotFoundError(f"File '{quotes_path}' not found in {path}.")
+        
+    # TODO: Add warning log if file has no entries
         
     quotes = [quote.strip() for quote in quotes]
         
