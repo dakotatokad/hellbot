@@ -1,26 +1,28 @@
+import time
 from dataclasses import dataclass, field
+
 import requests
 
-import time
 
 @dataclass
 class InfoAPI:
     """
     Establishes an API endpoint for the Helldivers 2 API.
     """
+
     name: str = "Generic API"
-    endpoint:str = "https://api.helldivers2.dev"
+    endpoint: str = "https://api.helldivers2.dev"
     super_client: str = "Default User"
     super_contact: str = "Default Contact"
     headers: dict = field(default_factory=dict)
-    
+
     def __post_init__(self):
         self.headers: dict = {
             "accept": "application/json",
             "X-Super-Client": self.super_client,
             "X-Super-Contact": self.super_contact,
         }
-        
+
     def test_api(self) -> int:
         """
         Tests the API connection by sending a GET request to the endpoint.
@@ -35,17 +37,19 @@ class InfoAPI:
         except requests.RequestException as e:
             print(f"Error connecting to API: {e}")
             return 0
-        
-@dataclass    
+
+
+@dataclass
 class APICache:
     """
     Establishes a cache for the API data.
     """
+
     data: requests.Response
     response_code: int
     timestamp: float
     ttl: int = 600
-    
+
     def get_cache(self) -> tuple[requests.Response, int]:
         """
         Gets data from the cache if it is still valid.
@@ -60,18 +64,19 @@ class APICache:
         # TODO: Log the cache retrieval attempt
         if self.response_code == -1:
             raise ValueError("Cache has not been populated yet.")
-        
+
         if (time.time() - self.timestamp) > self.ttl:
             # TODO: Is TTL necessary, or can't i just check if today is beyond the expiration date?
             # If I just set a new expiry date, I can just check if the current time is beyond that date.
             # This would remove the need for a few TTL functions.
             raise TimeoutError
-            
-        self.response_code = 304 # Not Modified
+
+        self.response_code = 304  # Not Modified
         return self.data, self.response_code
-            
-    
-    def set_cache(self, data: requests.Response, response_code: int, ttl: int = 600) -> None:
+
+    def set_cache(
+        self, data: requests.Response, response_code: int, ttl: int = 600
+    ) -> None:
         """
         Sets the cache data for a given key along with its timestamp.
 
@@ -86,4 +91,3 @@ class APICache:
         self.response_code = response_code
         self.timestamp = time.time()
         self.ttl = ttl
-    
