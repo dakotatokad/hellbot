@@ -18,7 +18,18 @@ dependencies = []
 where = ["."]
 
 [tool.ruff.lint]
-select = ["ALL"]
+select = [
+    "E", # pycodestyle errors
+    "F", # Pyflakes errors
+    "UP", # pyupgrade
+    "B", # flake8-bugbear
+    "SIM", # flake8-simplify
+    "I", # isort
+    ]
+ignore = [
+    "D212", # Docstring starts on same line
+    "D200", # One line docstring on one line
+]
 
 [tool.ruff]
-line-length = 88
+line-length = 120
