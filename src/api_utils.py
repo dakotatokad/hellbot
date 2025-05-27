@@ -2,6 +2,7 @@ import requests
 
 from . import classes
 
+
 async def query_api(
         api: classes.InfoAPI,  
         query: str,
@@ -41,7 +42,7 @@ def parse_requests_data(data: requests.Response) -> list | dict:
     Returns:
         list | dict: The parsable data as a list or dictionary.
     """
-    if isinstance(data, list) or isinstance(data, dict):
+    if isinstance(data, (list | dict)):
         return data
     elif hasattr(data, "json"):
         return data.json()

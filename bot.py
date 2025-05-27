@@ -1,14 +1,14 @@
+import logging
 import os
 import random
 import time
-import requests
-import logging
 
 import discord
+import requests
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from src import utils, classes, api_utils
+from src import api_utils, classes, utils
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -60,7 +60,9 @@ async def enlist(ctx):
 @bot.command(name="orders", help="Get the current Major Orders.")
 @commands.cooldown(1, 60, commands.BucketType.user) # 1 minute cooldown per user
 async def major_orders(ctx):
-    logging.info(f"Major Orders Command Invoked by {ctx.author.name}#{ctx.author.discriminator} in {ctx.guild.name if ctx.guild else 'DM'}")
+    logging.info(
+        f"Major Orders Command Invoked by {ctx.author.name}#{ctx.author.discriminator} "
+        + f"in {ctx.guild.name if ctx.guild else 'DM'}")
     try:
         raw_data, response_code = assignments_cache.get_cache()
         logging.debug(f"Assignments Cache Attempt: {response_code == 304}, Response Code: {response_code}")
