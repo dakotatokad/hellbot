@@ -1,6 +1,9 @@
 # Notebooks
 *.ipynb
 
+# Test Database
+/data/test*.db
+
 # JSON Doc Files
 /docs/*.json
 
