@@ -4,8 +4,6 @@ from datetime import UTC, datetime
 
 import requests
 
-from . import utils
-
 
 @dataclass
 class InfoAPI:
@@ -107,7 +105,7 @@ class MajorOrder:
     reward_type_index: int
     reward_amount: int
     expiration: str
-    last_fetched: datetime
+    last_fetched: str
     reward_type: str = field(default_factory=str)
     ttl: int = field(default_factory=int)
     response_code: int = field(default_factory=int)
@@ -120,8 +118,9 @@ class MajorOrder:
             
         if self.reward_amount == -1:
             self.reward_amount = 0
-            
-        self.ttl = utils.ttl_from_now(self.expiration)
+        
+        self.ttl = 0    
+        #self.ttl = utils.ttl_from_now(self.expiration)
 
     def update_ttl_from_now(self) -> int:
         """
