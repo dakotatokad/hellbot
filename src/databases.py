@@ -1,7 +1,11 @@
+import logging
 import sqlite3
 from warnings import deprecated
+from datetime import datetime, UTC
 
 from . import classes
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_DATABASE_PATH = "./data/hellbot.db"
 
@@ -76,10 +80,46 @@ def insert_row(table: str, db_path: str = DEFAULT_DATABASE_PATH, **kwargs):
 # TODO: Set expired orders to inactive
 
 
-def get_active_orders(db_path: str = "./data/hellbot.db") -> list:
+def get_active_orders(db_path: str = "./data/hellbot.db") -> list[tuple]:
+    """
+    Retrieve all active major orders from the database.
+
+    Args:
+        db_path (str, optional): The location of the database. Defaults to "./data/hellbot.db".
+
+    Returns:
+        list[tuple]: A list of tuples containing the active major orders ordered respectively:
+            - Key
+            - Order Briefing
+            - Reward Amount
+            - Reward Type
+            - Expiration Date
+    """
     with sqlite3.connect(db_path) as conn:     
         cursor = conn.cursor()
         cursor.execute("SELECT id, briefing, reward_amount, reward_type, expiration FROM major_orders WHERE active = 1")
         results = cursor.fetchall()
     
     return results
+
+
+def set_expired_orders_to_inactive(db_path: str = "./data/hellbot.db"):
+    """
+    Set all expired major orders to inactive in the database.
+
+    Args:
+        db_path (str, optional): The location of the database. Defaults to "./data/hellbot.db".
+    """
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, expiration FROM major_orders WHERE active = 1")
+        orders = cursor.fetchall()
+        print("orders")
+        print(orders)
+
+        for order_id, expiration in orders:
+            if (datetime.now(UTC).fromisoformat(expiration[:26]).replace(tzinfo=UTC)) <= datetime.now(UTC):
+                logger.debug("Setting order %d to inactive due to expiration.", order_id)
+                cursor.execute(f"UPDATE major_orders SET active = 0 WHERE id = {order_id}")
+                conn.commit()
+                

@@ -83,6 +83,8 @@ def parse_major_orders(assignments: list) -> list[classes.MajorOrder]:
         
         expiration = order["expiration"]
         
+        now = str(datetime.now(UTC))
+        
         major_orders.append(
             classes.MajorOrder(
                 order_id = id,
@@ -90,7 +92,7 @@ def parse_major_orders(assignments: list) -> list[classes.MajorOrder]:
                 reward_type_index = reward_type_index,
                 reward_amount = reward_amount,
                 expiration = expiration,
-                last_fetched = datetime.now(UTC)
+                last_fetched = str(datetime.fromisoformat(now[:26]).replace(tzinfo=UTC))
             )
         )
         
