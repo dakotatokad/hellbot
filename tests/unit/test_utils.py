@@ -1,7 +1,8 @@
+from datetime import UTC, datetime, timedelta
+
 import pytest
 
 from src import utils
-from datetime import datetime, timedelta, timezone
 
 
 @pytest.fixture
@@ -39,7 +40,7 @@ def test_parse_quotes_expected_return(test_string_data):
 
 def iso8601(dt):
     # Return ISO 8601 string with microseconds and 'Z'
-    return dt.replace(tzinfo=timezone.utc).isoformat(timespec="microseconds") + "Z"
+    return dt.replace(tzinfo=UTC).isoformat(timespec="microseconds") + "Z"
 
 
 @pytest.mark.parametrize(
@@ -51,7 +52,7 @@ def iso8601(dt):
     ],
 )
 def test_ttl_from_now_future_and_now(delta, expected_min):
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     future = now + delta
     future_str = iso8601(future)
     ttl = utils.ttl_from_now(future_str)
@@ -59,7 +60,7 @@ def test_ttl_from_now_future_and_now(delta, expected_min):
 
 
 def test_ttl_from_now_past():
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     past = now - timedelta(seconds=10)
     past_str = iso8601(past)
     ttl = utils.ttl_from_now(past_str)
@@ -72,7 +73,7 @@ def test_ttl_from_now_invalid_format():
 
 
 def test_ttl_from_now_exact_now():
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     now_str = iso8601(now)
     ttl = utils.ttl_from_now(now_str)
     # Should be very close to zero

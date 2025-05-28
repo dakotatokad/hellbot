@@ -1,7 +1,8 @@
 import pytest
-#import requests
 
+#import requests
 from src import classes
+
 
 @pytest.fixture
 def create_test_api():

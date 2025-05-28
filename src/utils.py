@@ -1,5 +1,6 @@
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
 
 def days_from_now(date: str) -> str:
     """
@@ -12,8 +13,8 @@ def days_from_now(date: str) -> str:
         str: The time from now until the given date, formatted as "X days, Y hours, Z minutes". No trailing punctuation.
     """
     from_now = str(
-            datetime.fromisoformat(date[:26]).replace(tzinfo=timezone.utc) 
-            - datetime.now(timezone.utc)
+            datetime.fromisoformat(date[:26]).replace(tzinfo=UTC) 
+            - datetime.now(UTC)
         ).split(", ")
     
     days = from_now[0]
@@ -35,8 +36,8 @@ def ttl_from_now(future_time:str) -> int:
         int: The TTL in seconds.
     """
     return int(
-        (datetime.fromisoformat(future_time[:26]).replace(tzinfo=timezone.utc) 
-         - datetime.now(timezone.utc)).total_seconds()
+        (datetime.fromisoformat(future_time[:26]).replace(tzinfo=UTC) 
+         - datetime.now(UTC)).total_seconds()
     )
     
 
@@ -50,10 +51,10 @@ def parse_quotes(path: str, file_name: str) -> list[str]:
     # os.path.join(os.path.dirname(os.path.dirname(__file__)), "data"
     quotes_path = os.path.join(path, file_name)
     try:
-        with open(quotes_path, "r") as file:
+        with open(quotes_path) as file:
             quotes = file.readlines()
-    except FileNotFoundError:
-        raise FileNotFoundError(f"File '{quotes_path}' not found in {path}.")
+    except FileNotFoundError as e:
+        raise FileNotFoundError(f"File '{quotes_path}' not found in {path}.") from e
         
     # TODO: Add warning log if file has no entries
         
