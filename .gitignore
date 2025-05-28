@@ -1,7 +1,8 @@
 # Notebooks
 *.ipynb
-# JSON Test files, for now
-*.json
+
+# JSON Doc Files
+/docs/*.json
 
 # Test Directories
 /tests/reports/assets/
