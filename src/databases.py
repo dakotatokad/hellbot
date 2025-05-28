@@ -1,13 +1,16 @@
 import logging
 import sqlite3
+from datetime import UTC, datetime
 from warnings import deprecated
-from datetime import datetime, UTC
 
 from . import classes
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_DATABASE_PATH = "./data/hellbot.db"
+
+def create_database_tables(db_path: str = DEFAULT_DATABASE_PATH):
+    create_major_order_table(db_path)
 
 
 def create_major_order_table(db_path: str = DEFAULT_DATABASE_PATH):
@@ -63,7 +66,7 @@ def add_major_order(order: classes.MajorOrder, db_path: str = DEFAULT_DATABASE_P
         conn.commit()
         
 
-def insert_row(table: str, db_path: str = DEFAULT_DATABASE_PATH, **kwargs):
+async def insert_row(table: str, db_path: str = DEFAULT_DATABASE_PATH, **kwargs):
     columns = ', '.join(kwargs.keys())
     placeholders = ', '.join(['?'] * len(kwargs))
     values = tuple(kwargs.values())
@@ -80,7 +83,7 @@ def insert_row(table: str, db_path: str = DEFAULT_DATABASE_PATH, **kwargs):
 # TODO: Set expired orders to inactive
 
 
-def get_active_orders(db_path: str = "./data/hellbot.db") -> list[tuple]:
+async def get_active_orders(db_path: str = "./data/hellbot.db") -> list[tuple]:
     """
     Retrieve all active major orders from the database.
 
@@ -103,7 +106,7 @@ def get_active_orders(db_path: str = "./data/hellbot.db") -> list[tuple]:
     return results
 
 
-def set_expired_orders_to_inactive(db_path: str = "./data/hellbot.db"):
+async def set_expired_orders_to_inactive(db_path: str = "./data/hellbot.db"):
     """
     Set all expired major orders to inactive in the database.
 
@@ -114,12 +117,52 @@ def set_expired_orders_to_inactive(db_path: str = "./data/hellbot.db"):
         cursor = conn.cursor()
         cursor.execute("SELECT id, expiration FROM major_orders WHERE active = 1")
         orders = cursor.fetchall()
-        print("orders")
-        print(orders)
 
         for order_id, expiration in orders:
             if (datetime.now(UTC).fromisoformat(expiration[:26]).replace(tzinfo=UTC)) <= datetime.now(UTC):
                 logger.debug("Setting order %d to inactive due to expiration.", order_id)
                 cursor.execute(f"UPDATE major_orders SET active = 0 WHERE id = {order_id}")
                 conn.commit()
-                
+
+
+async def last_fetched_a_day_ago(db_path: str = "./data/hellbot.db") -> bool:
+    """
+    Check if the last fetched time for any major order is more than a day ago.
+
+    Args:
+        db_path (str, optional): The location of the database. Defaults to "./data/hellbot.db".
+
+    Returns:
+        bool: True if any order was last fetched more than a day ago, False otherwise.
+    """
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT last_fetched FROM major_orders WHERE active = 1")
+        orders = cursor.fetchall()
+
+        for last_fetched in orders:
+            last_fetched_dt = datetime.fromisoformat(last_fetched[0][:26]).replace(tzinfo=UTC)
+            if (datetime.now(UTC) - last_fetched_dt).days > 1:
+                logger.debug("Order was last fetched more than a day ago, updating cache.")
+                return True
+            
+    logger.debug("All orders were last fetched within the last day.")
+    return False
+
+
+async def get_major_order_ids(db_path: str = "./data/hellbot.db") -> list[int]:
+    """
+    Retrieve all active major order IDs from the database.
+
+    Args:
+        db_path (str, optional): The location of the database. Defaults to "./data/hellbot.db".
+
+    Returns:
+        list[int]: A list of active major order IDs.
+    """
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT order_id FROM major_orders")
+        results = cursor.fetchall()
+    
+    return results

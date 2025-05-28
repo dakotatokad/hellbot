@@ -1,8 +1,11 @@
+import logging
 import time
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
 import requests
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -31,9 +34,10 @@ class InfoAPI:
         Returns:
             int: The HTTP status code of the response.
         """
-        # TODO: Log the API connection test
+        logging.debug("Testing API connection...")
         try:
             response = requests.get(self.endpoint, headers=self.headers)
+            logging.debug("API Response: %d", response.status_code)
             return response.status_code
         except requests.RequestException as e:
             print(f"Error connecting to API: {e}")

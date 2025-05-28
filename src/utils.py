@@ -102,22 +102,22 @@ def update_assignment_cache_with_orders(
     return cache
 
 
-def orders_older_than_one_day(orders: list[classes.MajorOrder]) -> bool:
-    """
-    Finds the largest TTL in a list of MajorOrder objects.
+# def orders_older_than_one_day(orders: list[classes.MajorOrder]) -> bool:
+#     """
+#     Finds the largest TTL in a list of MajorOrder objects.
 
-    Args:
-        list (list[classes.MajorOrder]): A list of MajorOrder objects.
+#     Args:
+#         list (list[classes.MajorOrder]): A list of MajorOrder objects.
 
-    Returns:
-        bool: True if any order in the list is older than one day, False otherwise.
-    """
+#     Returns:
+#         bool: True if any order in the list is older than one day, False otherwise.
+#     """
     
-    DAY_SECONDS = 24 * 60 * 60  # Number of seconds in a day
+#     DAY_SECONDS = 24 * 60 * 60  # Number of seconds in a day
     
-    for order in orders:
-        if (datetime.now(UTC) - order.last_fetched).total_seconds() > DAY_SECONDS:
-            logger.debug("Order %s was last fetched more than a day ago, updating cache.", order.order_id)
-            return True       
+#     for order in orders:
+#         if (datetime.now(UTC) - order.last_fetched).total_seconds() > DAY_SECONDS:
+#             logger.debug("Order %s was last fetched more than a day ago, updating cache.", order.order_id)
+#             return True       
     
-    return False
+#     return False
