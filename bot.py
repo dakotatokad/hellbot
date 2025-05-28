@@ -8,9 +8,15 @@ import requests
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from src import api_utils, classes, utils
+from src import api_utils, classes, configure_logger, utils
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+configure_logger.create_custom_logger("./configs/logging_config.json")
+
+logger.info("Starting Helldivers 2 Discord Bot...")
+logger.debug("==============================================")
+logger.debug("==============================================")
 
 load_dotenv()
 
@@ -60,19 +66,19 @@ async def enlist(ctx):
 @bot.command(name="orders", help="Get the current Major Orders.")
 @commands.cooldown(1, 60, commands.BucketType.user) # 1 minute cooldown per user
 async def major_orders(ctx):
-    logging.info(
+    logger.info(
         f"Major Orders Command Invoked by {ctx.author.name}#{ctx.author.discriminator} "
         + f"in {ctx.guild.name if ctx.guild else 'DM'}")
     try:
         raw_data, response_code = assignments_cache.get_cache()
-        logging.debug(f"Assignments Cache Attempt: {response_code == 304}, Response Code: {response_code}")
+        logger.debug(f"Assignments Cache Attempt: {response_code == 304}, Response Code: {response_code}")
     except (ValueError, TimeoutError):
         # TODO: Log the error; cache not populated yet
         raw_data, response_code = await api_utils.query_api(
             api = api,
             query = "assignments",
         )
-        logging.debug(f"API Query: {raw_data}, Response Code: {response_code}")
+        logger.debug(f"API Query: {raw_data}, Response Code: {response_code}")
         
         if response_code != 200:
             await ctx.send(
@@ -82,9 +88,10 @@ async def major_orders(ctx):
             return None
     
     parsed_data = api_utils.parse_requests_data(raw_data)
+    logger.debug(f"Parsed Data: {parsed_data}")
     expiration = parsed_data[0]['expiration']
     ttl = utils.ttl_from_now(expiration)
-    logging.debug(f"Assignments Updated: Expiration: {expiration}, TTL: {ttl} seconds")
+    logger.debug(f"Assignments Updated: Expiration: {expiration}, TTL: {ttl} seconds")
 
     if response_code == 200:
         # If the code is 200, it means data was fetched. 
@@ -123,7 +130,7 @@ async def on_command_error(ctx, error):
         await ctx.send("Command not found. Please check the command name.")
     else:
         await ctx.send("An error occurred while processing your command.")
-        logging.error(f"Error: {error}")
+        logger.error(f"Error: {error}")
 
         
 bot.run(TOKEN) # type: ignore
