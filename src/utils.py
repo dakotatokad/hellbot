@@ -1,5 +1,10 @@
+import logging
 import os
 from datetime import UTC, datetime
+
+from . import classes
+
+logger = logging.getLogger(__name__)
 
 
 def days_from_now(date: str) -> str:
@@ -61,3 +66,58 @@ def parse_quotes(path: str, file_name: str) -> list[str]:
     quotes = [quote.strip() for quote in quotes]
         
     return quotes
+
+
+def update_assignment_cache_with_orders(
+    orders: list[classes.MajorOrder], 
+    cache: list[classes.MajorOrder]
+    ) -> list[classes.MajorOrder]:
+    
+    for order in orders:
+        logger.debug(
+            "Major Order: %s  "
+            + "Rewards Type: %s "
+            + "Rewards Amount: %d "
+            + "Expiration: %s"
+            + order.briefing, order.reward_type, order.reward_amount, order.expiration
+            )
+        
+        #order.ttl = utils.ttl_from_now(order.expiration)
+        #logger.debug("Major Order %s TTL: %d seconds", order.briefing, order.ttl)
+        
+        if order in cache:
+            # Update the TLL if its in the cache
+            order.ttl = order.update_ttl_from_now()
+        else:
+            order.response_code = 304 # Not Modified, i.e. cached
+            cache.append(order)
+            logger.debug("Added new order to cache: %s", order.order_id)
+        
+        # Check if the order is expired
+        if order.ttl <= 0:
+            # If the order is expired, remove it from the cache
+            cache.remove(order)
+            logger.debug("Removed expired order from cache: %s", order.order_id)
+            
+    return cache
+
+
+# def orders_older_than_one_day(orders: list[classes.MajorOrder]) -> bool:
+#     """
+#     Finds the largest TTL in a list of MajorOrder objects.
+
+#     Args:
+#         list (list[classes.MajorOrder]): A list of MajorOrder objects.
+
+#     Returns:
+#         bool: True if any order in the list is older than one day, False otherwise.
+#     """
+    
+#     DAY_SECONDS = 24 * 60 * 60  # Number of seconds in a day
+    
+#     for order in orders:
+#         if (datetime.now(UTC) - order.last_fetched).total_seconds() > DAY_SECONDS:
+#             logger.debug("Order %s was last fetched more than a day ago, updating cache.", order.order_id)
+#             return True       
+    
+#     return False

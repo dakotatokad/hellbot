@@ -1,7 +1,11 @@
+import logging
 import time
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 
 import requests
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -30,9 +34,10 @@ class InfoAPI:
         Returns:
             int: The HTTP status code of the response.
         """
-        # TODO: Log the API connection test
+        logging.debug("Testing API connection...")
         try:
             response = requests.get(self.endpoint, headers=self.headers)
+            logging.debug("API Response: %d", response.status_code)
             return response.status_code
         except requests.RequestException as e:
             print(f"Error connecting to API: {e}")
@@ -91,3 +96,44 @@ class APICache:
         self.response_code = response_code
         self.timestamp = time.time()
         self.ttl = ttl
+
+
+@dataclass
+class MajorOrder:
+    """
+    Represents a Major Order in the Helldivers 2 API.
+    """
+
+    order_id: int
+    briefing: str
+    reward_type_index: int
+    reward_amount: int
+    expiration: str
+    last_fetched: str
+    reward_type: str = field(default_factory=str)
+    ttl: int = field(default_factory=int)
+    response_code: int = field(default_factory=int)
+    
+    def __post_init__(self):
+        if self.reward_type_index == -1:
+            self.reward_type = "N/A"
+        else:
+            self.reward_type = "Medals"
+            
+        if self.reward_amount == -1:
+            self.reward_amount = 0
+        
+        self.ttl = 0    
+        #self.ttl = utils.ttl_from_now(self.expiration)
+
+    def update_ttl_from_now(self) -> int:
+        """
+        Recalculates the time-to-live (TTL) in seconds from now.
+
+        Returns:
+            int: The TTL in seconds.
+        """
+        return int(
+            (datetime.fromisoformat(self.expiration[:26]).replace(tzinfo=UTC) 
+            - datetime.now(UTC)).total_seconds()
+        )
