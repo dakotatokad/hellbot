@@ -1,0 +1,30 @@
+name: Chore
+description: Create an issue for a development chore
+title: "[Chore]: "
+labels: ["triage", "chore", "status: Todo"]
+projects: ["dakotatokad/1"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Chore Entry
+  - type: textarea
+    id: chore
+    attributes:
+      label: New Chore
+      description: Enter the work that needs to be performed.
+      placeholder: Details regarding chore that needs doing...
+    validations:
+      required: true
+  - type: dropdown
+    id: pain
+    attributes:
+      label: What is the pain of not doing this for the future?
+      multiple: false
+      options:
+        - Low Pain
+        - Medium Pain
+        - High Pain
+    validations:
+      required: true
+      
