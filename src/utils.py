@@ -2,7 +2,7 @@ import logging
 import os
 from datetime import UTC, datetime
 
-import classes
+from . import classes
 
 logger = logging.getLogger(__name__)
 

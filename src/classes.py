@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 
 import requests
 
-import utils
+from . import utils
 
 
 @dataclass

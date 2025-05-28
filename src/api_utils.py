@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 
 import requests
 
-import classes
+from . import classes
 
 logger = logging.getLogger(__name__)
 
