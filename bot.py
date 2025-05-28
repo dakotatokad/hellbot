@@ -70,58 +70,66 @@ async def major_orders(ctx):
     logger.info(
         f"Major Orders Command Invoked by {ctx.author.name}#{ctx.author.discriminator} "
         + f"in {ctx.guild.name if ctx.guild else 'DM'}")
-    try:
-        # TODO: Get data from new cache setup of a list of MajorOrder objects
-        raw_data, response_code = assignments_cache.get_cache()
-        logger.debug(f"Assignments Cache Attempt: {response_code == 304}, Response Code: {response_code}")
-    except (ValueError, TimeoutError):
-        # TODO: Log the error; cache not populated yet
-        raw_data, response_code = await api_utils.query_api(
-            api = api,
-            query = "assignments",
-        )
-        logger.debug(f"API Query: {raw_data}, Response Code: {response_code}")
+    
+    # TODO: Get data from new cache setup of a list of MajorOrder objects
+    for assignment in assignments_cache:
+        try:
+            assignment.ttl = utils.ttl_from_now(assignment.expiration)
+            if assignment.ttl <= 0:
+                # Not the greatest way to handle this, but it works for now
+                # Basically, if one cache entry is expired, refetch everything
+                raise ValueError("Cache is expired, need to refresh data.")
+        except (ValueError):
+            # TODO: Log the error; cache not populated yet
+            raw_data, response_code = await api_utils.query_api(
+                api = api,
+                query = "assignments",
+            )
+            logger.debug(f"API Query: {raw_data}, Response Code: {response_code}")
+            
+            if response_code != 200:
+                await ctx.send(
+                    "Error: Unable to fetch Major Orders.\n"
+                    + "Error Code: %d", response_code
+                    )
+                return None
         
-        if response_code != 200:
-            await ctx.send(
-                "Error: Unable to fetch Major Orders.\n"
-                + f"Error Code: {response_code}"
-                )
-            return None
-    
-        parsed_data = api_utils.parse_requests_data(raw_data)
-        logger.debug("Parsed Data: %s", parsed_data)
-    
-        orders = api_utils.parse_major_orders(parsed_data)
-    
-        for order in orders:
-            logger.debug(
-                "Major Order: %s  "
-                + "Rewards Type: %s "
-                + "Rewards Amount: %d "
-                + "Expiration: %s"
-                + order.briefing, order.reward_type, order.reward_amount, order.expiration
-                )
-            
-            #order.ttl = utils.ttl_from_now(order.expiration)
-            #logger.debug("Major Order %s TTL: %d seconds", order.briefing, order.ttl)
-            
-            if order in assignments_cache:
-                # Update the TLL if its in the cache
-                order.ttl = utils.ttl_from_now(order.expiration)
-            else:
-                assignments_cache.append(order)
-                logger.debug("Added new order to cache: %s", order.order_id)
-            
-            # Check if the order is expired
-            if order.ttl <= 0:
-                # If the order is expired, remove it from the cache
-                assignments_cache.remove(order)
-                logger.debug("Removed expired order from cache: %s", order.order_id)
+            parsed_data = api_utils.parse_requests_data(raw_data)
+            logger.debug("Parsed Data: %s", parsed_data)
+        
+            orders = api_utils.parse_major_orders(parsed_data)
+            logger.debug("Parsed %d Major Orders", len(orders))
+        
+            for order in orders:
+                logger.debug(
+                    "Major Order: %s  "
+                    + "Rewards Type: %s "
+                    + "Rewards Amount: %d "
+                    + "Expiration: %s"
+                    + order.briefing, order.reward_type, order.reward_amount, order.expiration
+                    )
+                
+                #order.ttl = utils.ttl_from_now(order.expiration)
+                #logger.debug("Major Order %s TTL: %d seconds", order.briefing, order.ttl)
+                
+                if order in assignments_cache:
+                    # Update the TLL if its in the cache
+                    order.ttl = utils.ttl_from_now(order.expiration)
+                else:
+                    order.response_code = 304 # Not Modified, i.e. cached
+                    assignments_cache.append(order)
+                    logger.debug("Added new order to cache: %s", order.order_id)
+                
+                # Check if the order is expired
+                if order.ttl <= 0:
+                    # If the order is expired, remove it from the cache
+                    assignments_cache.remove(order)
+                    logger.debug("Removed expired order from cache: %s", order.order_id)
                 
     # Now just use the cache since its updated
 
     ## probably refactor this function
+    # TODO: Handle when there are no assignments available
     for assignment in assignments_cache:
         await ctx.send(
             "Solder, your orders are as follows:\n"
@@ -129,7 +137,6 @@ async def major_orders(ctx):
             + "Rewards: %d %s\n", assignment.reward_amount, assignment.reward_type
             + "Expires in: %s\n", utils.days_from_now(assignment.expiration)
             )
-    
     ##
 
 
