@@ -1,9 +1,10 @@
 import time
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 
 import requests
 
-from . import utils
+import utils
 
 
 @dataclass
@@ -106,6 +107,7 @@ class MajorOrder:
     reward_type_index: int
     reward_amount: int
     expiration: str
+    last_fetched: datetime
     reward_type: str = field(default_factory=str)
     ttl: int = field(default_factory=int)
     response_code: int = field(default_factory=int)
@@ -120,3 +122,15 @@ class MajorOrder:
             self.reward_amount = 0
             
         self.ttl = utils.ttl_from_now(self.expiration)
+
+    def update_ttl_from_now(self) -> int:
+        """
+        Recalculates the time-to-live (TTL) in seconds from now.
+
+        Returns:
+            int: The TTL in seconds.
+        """
+        return int(
+            (datetime.fromisoformat(self.expiration[:26]).replace(tzinfo=UTC) 
+            - datetime.now(UTC)).total_seconds()
+        )

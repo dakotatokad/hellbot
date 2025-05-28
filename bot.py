@@ -1,10 +1,8 @@
 import logging
 import os
 import random
-import time
 
 import discord
-import requests
 from discord.ext import commands
 from dotenv import load_dotenv
 
@@ -46,7 +44,7 @@ if api.test_api() != 200:
         "Please check your API settings and network connection.")
 
 # Initialize data caches for API data
-assignments_cache = []
+assignments_cache = []  # List to hold MajorOrder objects
 # assignments_cache = classes.APICache(
 #     data = requests.Response(),  # Placeholder for the initial data
 #     response_code= -1, # -1 indicates the cache has not been populated
@@ -61,74 +59,55 @@ bot = commands.Bot(command_prefix="$", intents=intents)
 @bot.command(name="inspire", help="Inspires our brave Helldivers with a quote.")
 @commands.cooldown(5, 30, commands.BucketType.user) # 30 seconds cooldown per user
 async def enlist(ctx):
+    logger.info(
+        f"Inspire Command Invoked by {ctx.author.name}#{ctx.author.discriminator} "
+        + f"in {ctx.guild.name if ctx.guild else 'DM'}")
     response = random.choice(inspirational_quotes)
     await ctx.send(response)
     
 @bot.command(name="orders", help="Get the current Major Orders.")
 @commands.cooldown(1, 60, commands.BucketType.user) # 1 minute cooldown per user
 async def major_orders(ctx):
+    global assignments_cache  # List to hold MajorOrder objects
     logger.info(
         f"Major Orders Command Invoked by {ctx.author.name}#{ctx.author.discriminator} "
         + f"in {ctx.guild.name if ctx.guild else 'DM'}")
     
-    # TODO: Get data from new cache setup of a list of MajorOrder objects
-    for assignment in assignments_cache:
+    # If there is nothing in the cache, we'll need to fetch new data regardless
+    if len(assignments_cache) == 0:
+        logger.debug("Assignments cache is empty, fetching data from API.")
+        
         try:
-            assignment.ttl = utils.ttl_from_now(assignment.expiration)
-            if assignment.ttl <= 0:
-                # Not the greatest way to handle this, but it works for now
-                # Basically, if one cache entry is expired, refetch everything
-                raise ValueError("Cache is expired, need to refresh data.")
-        except (ValueError):
-            # TODO: Log the error; cache not populated yet
-            raw_data, response_code = await api_utils.query_api(
-                api = api,
-                query = "assignments",
+            data = await api_utils.fetch_and_parse_from_api(
+                api=api,
+                query="assignments",
             )
-            logger.debug(f"API Query: {raw_data}, Response Code: {response_code}")
-            
-            if response_code != 200:
-                await ctx.send(
-                    "Error: Unable to fetch Major Orders.\n"
-                    + "Error Code: %d", response_code
-                    )
-                return None
-        
-            parsed_data = api_utils.parse_requests_data(raw_data)
-            logger.debug("Parsed Data: %s", parsed_data)
-        
-            orders = api_utils.parse_major_orders(parsed_data)
+            orders = api_utils.parse_major_orders(data)
             logger.debug("Parsed %d Major Orders", len(orders))
-        
-            for order in orders:
-                logger.debug(
-                    "Major Order: %s  "
-                    + "Rewards Type: %s "
-                    + "Rewards Amount: %d "
-                    + "Expiration: %s"
-                    + order.briefing, order.reward_type, order.reward_amount, order.expiration
-                    )
-                
-                #order.ttl = utils.ttl_from_now(order.expiration)
-                #logger.debug("Major Order %s TTL: %d seconds", order.briefing, order.ttl)
-                
-                if order in assignments_cache:
-                    # Update the TLL if its in the cache
-                    order.ttl = utils.ttl_from_now(order.expiration)
-                else:
-                    order.response_code = 304 # Not Modified, i.e. cached
-                    assignments_cache.append(order)
-                    logger.debug("Added new order to cache: %s", order.order_id)
-                
-                # Check if the order is expired
-                if order.ttl <= 0:
-                    # If the order is expired, remove it from the cache
-                    assignments_cache.remove(order)
-                    logger.debug("Removed expired order from cache: %s", order.order_id)
-                
-    # Now just use the cache since its updated
+            assignments_cache = utils.update_assignment_cache_with_orders(orders, assignments_cache)
+        except ConnectionError:
+            await ctx.send("Error: Unable to fetch Major Orders")
+            return None
+    
+    # If the cache is not empty, we can use it to remove any expired assignments    
+    assignments_cache = api_utils.remove_expired_assignments(assignments_cache)
+    
+    # If any cache item is older than a day, refresh the cache
+    if utils.orders_older_than_one_day(assignments_cache):
+        # TODO: This code is 1:1 duplicated and should be refactored
+        try:
+            data = await api_utils.fetch_and_parse_from_api(
+                api=api,
+                query="assignments",
+            )
+            orders = api_utils.parse_major_orders(data)
+            logger.debug("Parsed %d Major Orders", len(orders))
+            assignments_cache = utils.update_assignment_cache_with_orders(orders, assignments_cache)
+        except ConnectionError:
+            await ctx.send("Error: Unable to fetch Major Orders")
+            return None
 
-    ## probably refactor this function
+    # Now that the cache is current, we can send the assignments to the user
     # TODO: Handle when there are no assignments available
     for assignment in assignments_cache:
         await ctx.send(
@@ -137,7 +116,6 @@ async def major_orders(ctx):
             + "Rewards: %d %s\n", assignment.reward_amount, assignment.reward_type
             + "Expires in: %s\n", utils.days_from_now(assignment.expiration)
             )
-    ##
 
 
 @bot.event
