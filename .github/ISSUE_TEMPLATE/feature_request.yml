@@ -1,7 +1,7 @@
 name: Feature Request
 description: Request a new feature or enhancement
 title: "[Feat]: "
-labels: ["triage", "enhancement", "status: Todo"]
+labels: ["triage", "feature", "status: Todo"]
 projects: ["dakotatokad/1"]
 body:
   - type: markdown
