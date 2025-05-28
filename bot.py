@@ -46,11 +46,12 @@ if api.test_api() != 200:
         "Please check your API settings and network connection.")
 
 # Initialize data caches for API data
-assignments_cache = classes.APICache(
-    data = requests.Response(),  # Placeholder for the initial data
-    response_code= -1, # -1 indicates the cache has not been populated
-    timestamp = time.time(),
-)
+assignments_cache = []
+# assignments_cache = classes.APICache(
+#     data = requests.Response(),  # Placeholder for the initial data
+#     response_code= -1, # -1 indicates the cache has not been populated
+#     timestamp = time.time(),
+# )
 
 inspirational_quotes = utils.parse_quotes(os.path.join(".", "data"), "inspirational_quotes.txt")
 error_quotes = utils.parse_quotes(os.path.join(".", "data"), "error_phrases.txt")
@@ -70,6 +71,7 @@ async def major_orders(ctx):
         f"Major Orders Command Invoked by {ctx.author.name}#{ctx.author.discriminator} "
         + f"in {ctx.guild.name if ctx.guild else 'DM'}")
     try:
+        # TODO: Get data from new cache setup of a list of MajorOrder objects
         raw_data, response_code = assignments_cache.get_cache()
         logger.debug(f"Assignments Cache Attempt: {response_code == 304}, Response Code: {response_code}")
     except (ValueError, TimeoutError):
@@ -87,29 +89,48 @@ async def major_orders(ctx):
                 )
             return None
     
-    parsed_data = api_utils.parse_requests_data(raw_data)
-    logger.debug(f"Parsed Data: {parsed_data}")
-    expiration = parsed_data[0]['expiration']
-    ttl = utils.ttl_from_now(expiration)
-    logger.debug(f"Assignments Updated: Expiration: {expiration}, TTL: {ttl} seconds")
-
-    if response_code == 200:
-        # If the code is 200, it means data was fetched. 
-        # We need to update the cache with a new TTL and fetched data.
-        assignments_cache.set_cache(
-            data = raw_data,
-            response_code = response_code,
-            ttl = ttl,
-        )
-    else:
-        # If the code is not 200, we used cached data and only need to update the TTL.
-        assignments_cache.ttl = ttl
+        parsed_data = api_utils.parse_requests_data(raw_data)
+        logger.debug("Parsed Data: %s", parsed_data)
+    
+        orders = api_utils.parse_major_orders(parsed_data)
+    
+        for order in orders:
+            logger.debug(
+                "Major Order: %s  "
+                + "Rewards Type: %s "
+                + "Rewards Amount: %d "
+                + "Expiration: %s"
+                + order.briefing, order.reward_type, order.reward_amount, order.expiration
+                )
             
-    await ctx.send(
-        f"Major Order: {parsed_data[0]['briefing']}\n"
-        + f"Rewards: {parsed_data[0]['rewards'][0]['amount']} Medals\n"
-        + f"Expires in: {utils.days_from_now(expiration)}"
-    )
+            #order.ttl = utils.ttl_from_now(order.expiration)
+            #logger.debug("Major Order %s TTL: %d seconds", order.briefing, order.ttl)
+            
+            if order in assignments_cache:
+                # Update the TLL if its in the cache
+                order.ttl = utils.ttl_from_now(order.expiration)
+            else:
+                assignments_cache.append(order)
+                logger.debug("Added new order to cache: %s", order.order_id)
+            
+            # Check if the order is expired
+            if order.ttl <= 0:
+                # If the order is expired, remove it from the cache
+                assignments_cache.remove(order)
+                logger.debug("Removed expired order from cache: %s", order.order_id)
+                
+    # Now just use the cache since its updated
+
+    ## probably refactor this function
+    for assignment in assignments_cache:
+        await ctx.send(
+            "Solder, your orders are as follows:\n"
+            + "Major Order: %s\n", assignment.briefing
+            + "Rewards: %d %s\n", assignment.reward_amount, assignment.reward_type
+            + "Expires in: %s\n", utils.days_from_now(assignment.expiration)
+            )
+    
+    ##
 
 
 @bot.event
