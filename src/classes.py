@@ -3,6 +3,8 @@ from dataclasses import dataclass, field
 
 import requests
 
+from . import utils
+
 
 @dataclass
 class InfoAPI:
@@ -91,3 +93,30 @@ class APICache:
         self.response_code = response_code
         self.timestamp = time.time()
         self.ttl = ttl
+
+
+@dataclass
+class MajorOrder:
+    """
+    Represents a Major Order in the Helldivers 2 API.
+    """
+
+    order_id: int
+    briefing: str
+    reward_type_index: int
+    reward_amount: int
+    expiration: str
+    reward_type: str = field(default_factory=str)
+    ttl: int = field(default_factory=int)
+    response_code: int = field(default_factory=int)
+    
+    def __post_init__(self):
+        if self.reward_type_index == -1:
+            self.reward_type = "N/A"
+        else:
+            self.reward_type = "Medals"
+            
+        if self.reward_amount == -1:
+            self.reward_amount = 0
+            
+        self.ttl = utils.ttl_from_now(self.expiration)
