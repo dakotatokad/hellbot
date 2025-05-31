@@ -7,6 +7,8 @@ CREATE TABLE IF NOT EXISTS weapons (
     FOREIGN KEY (category) REFERENCES weapon_category(id)
 );
 
+-- TODO: populate table with weapons
+
 CREATE TABLE IF NOT EXISTS weapon_class (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     class VARCHAR(50) NOT NULL
@@ -42,33 +44,6 @@ CREATE TABLE IF NOT EXISTS strategems (
     FOREIGN KEY (type) REFERENCES strategem_type(id),
     FOREIGN KEY (class) REFERENCES strategem_class(id)
 );
-
-
-CREATE TABLE IF NOT EXISTS strategem_type (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    type VARCHAR(50) NOT NULL
-);
-
-INSERT INTO strategem_type (type) VALUES
-('offensive'),
-('supply'),
-('defensive'),
-('support');
-
-
-CREATE TABLE IF NOT EXISTS strategem_class (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    class TEXT NOT NULL
-);
-
-INSERT INTO strategem_class (class) VALUES
-('orbital strike'),
-('backpacks'),
-('eagle'),
-('vehicles'),
-('weapon'),
-('sentry'),
-('emplacement');
 
 INSERT INTO strategems (name, type, class) VALUES
 ('Orbital Precision Strike', 1, 1),
@@ -137,4 +112,31 @@ INSERT INTO strategems (name, type, class) VALUES
 ('Anti-Tank Mines', 3, 7),
 ('Gas Mines', 3, 7),
 ('Anti-Personnel Minefield', 3, 7),
-('Incendiary Mines', 3, 7)
+('Incendiary Mines', 3, 7);
+
+
+CREATE TABLE IF NOT EXISTS strategem_type (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type VARCHAR(50) NOT NULL
+);
+
+INSERT INTO strategem_type (type) VALUES
+('offensive'),
+('supply'),
+('defensive'),
+('support');
+
+
+CREATE TABLE IF NOT EXISTS strategem_class (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    class TEXT NOT NULL
+);
+
+INSERT INTO strategem_class (class) VALUES
+('orbital strike'),
+('backpacks'),
+('eagle'),
+('vehicles'),
+('weapon'),
+('sentry'),
+('emplacement');
