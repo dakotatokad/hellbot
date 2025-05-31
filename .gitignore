@@ -1,7 +1,16 @@
 # Notebooks
 *.ipynb
-# JSON Test files, for now
-*.json
+
+# Test Database
+/data/test*.db
+
+# JSON Doc Files
+/docs/*.json
+
+# Test Directories
+/tests/reports/assets/
+/tests/reports/coverage/
+/tests/reports/tests.html
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
